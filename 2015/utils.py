@@ -16,7 +16,7 @@ def find_input_filename() -> Optional[str]:
 def load_input(input_file: Optional[str] = None) -> str:
     input_file = input_file or find_input_filename()
     with open(input_file, "r") as f:
-        return f.read()
+        return f.read().strip()
 
 
 def load_lines(input_file: Optional[str] = None) -> List[str]:
