@@ -2,7 +2,8 @@ import dataclasses
 from functools import cached_property
 from typing import List
 
-from utils import load_lines, Coords2D
+from utils import load_lines
+from utils_coords import Coords2D
 
 
 class Map:
