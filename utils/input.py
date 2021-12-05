@@ -1,4 +1,3 @@
-import dataclasses
 import inspect
 import os
 from typing import Optional, List
@@ -6,7 +5,7 @@ from typing import Optional, List
 
 def find_input_filename(test: bool = False) -> Optional[str]:
     suffix = "-input.txt" if not test else "-test.txt"
-    my_filename = __name__
+    my_filename = __name__.split(".")[-1]
     for frame in inspect.stack():
         filename, ext = os.path.basename(frame.filename).split(".", 1)
         if filename != my_filename:

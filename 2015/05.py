@@ -1,4 +1,4 @@
-from utils import load_lines
+from utils.input import load_lines
 
 
 def is_nice(line: str) -> bool:

@@ -1,4 +1,4 @@
-from utils import load_input
+from utils.input import load_input
 
 my_input = load_input()
 

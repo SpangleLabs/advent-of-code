@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import List, Callable
 
-from utils import load_lines
+from utils.input import load_lines
 
 
 def filter_matching(lines: List[str], bit_criteria: Callable[[str, str], bool]) -> int:

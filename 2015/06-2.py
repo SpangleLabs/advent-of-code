@@ -1,6 +1,6 @@
 from typing import Tuple, Callable
 
-from utils import load_lines
+from utils.input import load_lines
 
 
 class Lights:

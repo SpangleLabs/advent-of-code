@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import Tuple, List
 
-from utils import load_lines
+from utils.input import load_lines
 
 
 def calculate_values(lines: List[str]) -> Tuple[int, int]:

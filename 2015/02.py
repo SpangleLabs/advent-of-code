@@ -1,4 +1,4 @@
-from utils import load_lines
+from utils.input import load_lines
 
 
 def parcel_area(l: int, w: int, h: int) -> int:

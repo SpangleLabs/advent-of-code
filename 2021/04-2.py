@@ -1,6 +1,6 @@
 from typing import List
 
-from utils import load_lines
+from utils.input import load_lines
 
 
 class BingoBoard:

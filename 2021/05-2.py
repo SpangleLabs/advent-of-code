@@ -1,8 +1,8 @@
 import dataclasses
 from typing import List
 
-from utils import load_lines
-from utils_coords import Coords2D, Line2D, Map2D
+from utils.input import load_lines
+from utils.coords2d import Coords2D, Line2D, Map2D
 
 
 class Map(Map2D):

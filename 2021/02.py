@@ -1,6 +1,6 @@
 import dataclasses
 
-from utils import load_lines
+from utils.input import load_lines
 
 
 @dataclasses.dataclass

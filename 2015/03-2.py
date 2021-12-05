@@ -1,6 +1,6 @@
 from collections import Counter
 
-from utils import load_input
+from utils.input import load_input
 
 
 if __name__ == "__main__":
