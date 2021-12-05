@@ -22,3 +22,7 @@ def load_input(input_file: Optional[str] = None, test: bool = False) -> str:
 
 def load_lines(input_file: Optional[str] = None, test: bool = False) -> List[str]:
     return load_input(input_file, test).split("\n")
+
+
+def load_lines_split(sep: str, input_file: Optional[str] = None, test: bool = False) -> List[List[str]]:
+    return [line.split(sep) for line in load_lines(input_file, test)]
