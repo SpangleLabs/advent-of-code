@@ -67,6 +67,8 @@ class Leaderboard:
             f"Year: {self.year}"
         ]
         view_members = [member for member in self.sorted_members if member.days]
+        if not view_members:
+            return "\n".join(lines)
         member_tables = {
             member.member_id: member.render_table(
                 show_times=show_times,
