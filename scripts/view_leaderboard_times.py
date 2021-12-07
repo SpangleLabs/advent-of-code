@@ -7,10 +7,11 @@ import requests
 
 CONFIG_FILE = "leaderboard_config.json"
 CACHE_FILE = "leaderboard_cache.json"
+CACHE_TIMEOUT_SECONDS = 15 * 60
 
 
-def fetch_leaderboard_data(leaderboard_id: int, session_cookie: str, year: int = None) -> dict:
-    year = year or datetime.date.today().year
+def fetch_leaderboard_data(leaderboard_id: str, session_cookie: str, year: str = None) -> dict:
+    year = year or str(datetime.date.today().year)
     api_url = f"https://adventofcode.com/{year}/leaderboard/private/view/{leaderboard_id}.json"
     resp = requests.get(api_url, cookies={"session": session_cookie})
     return resp.json()
@@ -100,13 +101,13 @@ class Leaderboard:
         )
 
     @classmethod
-    def load_from_api(cls, leaderboard_id: int, session_cookie: str, year: int = None) -> "Leaderboard":
+    def load_from_api(cls, leaderboard_id: str, session_cookie: str, year: str = None) -> "Leaderboard":
         data = fetch_leaderboard_data(leaderboard_id, session_cookie, year)
         return cls.from_data(data)
 
     @classmethod
-    def load_from_api_or_cache(cls, leaderboard_id: int, session_cookie: str, year: int = None) -> "Leaderboard":
-        year = year or datetime.date.today().year
+    def load_from_api_or_cache(cls, leaderboard_id: str, session_cookie: str, year: int = None) -> "Leaderboard":
+        year = str(year or datetime.date.today().year)
         cache_data = {}
         try:
             with open(CACHE_FILE, "r") as f:
@@ -119,7 +120,7 @@ class Leaderboard:
         cache_time = None
         if cache_ts:
             cache_time = datetime.datetime.fromisoformat(cache_ts)
-        if cache_time is None or (datetime.datetime.now() - cache_time).total_seconds() > 15*60:
+        if cache_time is None or (datetime.datetime.now() - cache_time).total_seconds() > CACHE_TIMEOUT_SECONDS:
             data = fetch_leaderboard_data(leaderboard_id, session_cookie, year)
             if year not in cache_data:
                 cache_data[year] = {}
