@@ -1,6 +1,6 @@
 import dataclasses
 from functools import cached_property
-from typing import Union, Optional
+from typing import Union, Iterable, TypeVar, Generic
 
 
 @dataclasses.dataclass
@@ -18,6 +18,16 @@ class Coords2D:
 
     def __eq__(self, other: "Coords2D") -> bool:
         return isinstance(other, Coords2D) and self.x == other.x and self.y == other.y
+
+    def copy(self, *, x: int = None, y: int = None) -> "Coords2D":
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+        return Coords2D(x, y)
+
+    def __hash__(self):
+        return hash((self.x, self.y))
 
 
 @dataclasses.dataclass
@@ -76,8 +86,30 @@ class Line2D:
         )
 
 
-class Map2D:
-    def __init__(self, width: int, height: int, fill: Optional[Union[str, int]] = None) -> None:
+T = TypeVar("T", bound=Union[None, str, int, bool])
+
+
+class Map2D(Generic[T]):
+    def __init__(self, width: int, height: int, fill: T = None) -> None:
         self.map = []
         for _ in range(height):
             self.map.append([fill for _ in range(width)])
+
+    @property
+    def width(self) -> int:
+        return len(self.map[0])
+
+    @property
+    def height(self) -> int:
+        return len(self.map)
+
+    def get_value(self, coords: Coords2D) -> T:
+        return self.map[coords.y][coords.x]
+
+    def set_value(self, coords: Coords2D, val: T) -> None:
+        self.map[coords.y][coords.x] = val
+
+    def all_coords(self) -> Iterable[Coords2D]:
+        for y, row in enumerate(self.map):
+            for x in range(len(row)):
+                yield Coords2D(x, y)
