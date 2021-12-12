@@ -1,6 +1,6 @@
 import dataclasses
 from functools import cached_property
-from typing import Union, Iterable, TypeVar, Generic
+from typing import Union, Iterable, TypeVar, Generic, List
 
 
 @dataclasses.dataclass
@@ -28,6 +28,23 @@ class Coords2D:
 
     def __hash__(self):
         return hash((self.x, self.y))
+
+    def list_neighbours(self, with_diagonals: bool = False) -> List["Coords2D"]:
+        neighbours = [
+            Coords2D(self.x - 1, self.y),
+            Coords2D(self.x, self.y - 1),
+            Coords2D(self.x + 1, self.y),
+            Coords2D(self.x, self.y + 1)
+        ]
+        if not with_diagonals:
+            return neighbours
+        neighbours.extend([
+            Coords2D(self.x - 1, self.y - 1),
+            Coords2D(self.x - 1, self.y + 1),
+            Coords2D(self.x + 1, self.y - 1),
+            Coords2D(self.x + 1, self.y + 1)
+        ])
+        return neighbours
 
 
 @dataclasses.dataclass
@@ -103,6 +120,10 @@ class Map2D(Generic[T]):
     def height(self) -> int:
         return len(self.map)
 
+    @property
+    def size(self) -> int:
+        return self.width * self.height
+
     def get_value(self, coords: Coords2D) -> T:
         return self.map[coords.y][coords.x]
 
@@ -113,3 +134,22 @@ class Map2D(Generic[T]):
         for y, row in enumerate(self.map):
             for x in range(len(row)):
                 yield Coords2D(x, y)
+
+    @classmethod
+    def from_number_input(cls, input_list: List[str]) -> "Map2D[int]":
+        grid = cls(0, 0, fill=0)
+        for line in input_list:
+            grid.map.append([int(x) for x in line])
+        return grid
+
+    def valid_coords(self, coords: Coords2D) -> bool:
+        if coords.x < 0 or coords.y < 0:
+            return False
+        if coords.x >= self.width or coords.y >= self.height:
+            return False
+        return True
+
+    def valid_neighbours(self, coords: Coords2D, with_diagonals: bool = False) -> List[Coords2D]:
+        return [
+            coord for coord in coords.list_neighbours(with_diagonals) if self.valid_coords(coord)
+        ]
