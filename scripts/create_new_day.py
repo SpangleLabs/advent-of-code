@@ -1,3 +1,4 @@
+import html
 import json
 import os
 import re
@@ -26,7 +27,7 @@ def find_example(page_url, cookie: str) -> Optional[str]:
     for match in example_pattern.finditer(page_data):
         raw_data = match.group(1)
         tag_pattern.sub("", raw_data)
-        examples.append(raw_data)
+        examples.append(html.unescape(raw_data))
     if examples:
         return examples[0]
 
