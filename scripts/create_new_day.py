@@ -23,7 +23,7 @@ def _main() -> str:
 if __name__ == "__main__":
     start_time = datetime.datetime.now()
     print(_main())
-    print("Time taken: {(datetime.datetime.now() - start_time).total_seconds()}")
+    print(f"Time taken: {(datetime.datetime.now() - start_time).total_seconds()}s")
 """
 
 
