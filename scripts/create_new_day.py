@@ -10,12 +10,20 @@ import requests
 
 from scripts.leaderboard import CONFIG_FILE
 
-CODE_TEMPLATE = """
+CODE_TEMPLATE = """import datetime
+
 from utils.input import load_lines
 
-if __name__ == "__main__":
+
+def _main() -> str:
     my_input = load_lines(test=True)
-    print("Good luck!")
+    return "Good luck!"
+
+
+if __name__ == "__main__":
+    start_time = datetime.datetime.now()
+    print(_main())
+    print("Time taken: {(datetime.datetime.now() - start_time).total_seconds()}")
 """
 
 
