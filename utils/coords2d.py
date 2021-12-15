@@ -103,7 +103,7 @@ class Line2D:
         )
 
 
-T = TypeVar("T", bound=Union[None, str, int, bool])
+T = TypeVar("T", bound=Union[None, str, int, bool, float])
 
 
 class Map2D(Generic[T]):
@@ -129,6 +129,10 @@ class Map2D(Generic[T]):
 
     def set_value(self, coords: Coords2D, val: T) -> None:
         self.map[coords.y][coords.x] = val
+
+    def set_value_if_smaller(self, coords: Coords2D, val: T) -> None:
+        if self.map[coords.y][coords.x] > val:
+            self.set_value(coords, val)
 
     def all_coords(self) -> Iterable[Coords2D]:
         for y, row in enumerate(self.map):
