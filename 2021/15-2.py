@@ -1,6 +1,7 @@
 import datetime
 from math import inf
 from typing import List
+import heapq
 
 from utils.coords2d import Map2D, Coords2D
 from utils.input import load_lines
@@ -15,15 +16,16 @@ class RiskMap:
         self.tentative_risk.set_value(self.start, 0)
         self.total_risk = Map2D(self.risk.width, self.risk.height, None)
         self.total_risk.set_value(self.start, 0)
-        self.tentative_coords = set()
+        self.tentative_coords = []
 
     def calculate_distances(self) -> None:
         found = False
         current_node = self.start
         while not found:
             self.calculate_distances_from_coord(current_node)
-            lowest = self.find_lowest_tentative_risk()
-            self.tentative_coords.remove(lowest)
+            _, lowest = heapq.heappop(self.tentative_coords)
+            if self.total_risk.get_value(lowest) is not None:
+                continue
             self.total_risk.set_value(lowest, self.tentative_risk.get_value(lowest))
             if lowest == self.end:
                 found = True
@@ -38,7 +40,10 @@ class RiskMap:
                 continue
             total_risk = current_risk + self.risk.get_value(neighbour)
             self.tentative_risk.set_value_if_smaller(neighbour, total_risk)
-            self.tentative_coords.add(neighbour)
+            risk_tuple = (self.tentative_risk.get_value(neighbour), neighbour)
+            if risk_tuple in self.tentative_coords:
+                continue
+            heapq.heappush(self.tentative_coords, (self.tentative_risk.get_value(neighbour), neighbour))
 
     def render_totals(self) -> str:
         return "\n".join(
