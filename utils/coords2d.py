@@ -3,7 +3,7 @@ from functools import cached_property
 from typing import Union, Iterable, TypeVar, Generic, List
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(order=True, eq=True, frozen=True)
 class Coords2D:
     x: int
     y: int
@@ -15,9 +15,6 @@ class Coords2D:
             int(split[0]),
             int(split[1])
         )
-
-    def __eq__(self, other: "Coords2D") -> bool:
-        return isinstance(other, Coords2D) and self.x == other.x and self.y == other.y
 
     def copy(self, *, x: int = None, y: int = None) -> "Coords2D":
         if x is None:
