@@ -46,6 +46,11 @@ def choose_script() -> Optional[str]:
     return scripts[int(resp)]
 
 
+def run_script(script: str) -> None:
+    s = importlib.import_module(f"scripts.{script}")
+    s._main()
+
+
 def run_advent_date(date: datetime.date) -> None:
     i1 = importlib.import_module(f"{date.year}.{date.day}")
     start_time = datetime.datetime.now()
@@ -72,5 +77,6 @@ if __name__ == "__main__":
         while script_choice is None:
             script_choice = choose_script()
         print(f"Script chosen: {script_choice}")  # TODO: run script
+        run_script(script_choice)
     else:
         print("Unrecognised option.")

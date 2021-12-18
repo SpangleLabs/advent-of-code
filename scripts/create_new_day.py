@@ -72,9 +72,13 @@ def setup_day(year: int, day: int, cookie: str) -> None:
             f.write(example)
 
 
-if __name__ == "__main__":
+def _main() -> None:
     y = 2021
     d = datetime.today().day
     with open(CONFIG_FILE, "r") as conf_file:
         conf = json.load(conf_file)
     setup_day(y, d, conf["session_cookie"])
+
+
+if __name__ == "__main__":
+    _main()

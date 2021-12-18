@@ -2,7 +2,8 @@ import json
 
 from leaderboard import Leaderboard, CONFIG_FILE
 
-if __name__ == "__main__":
+
+def _main() -> None:
     input_year = 2021
     with open(CONFIG_FILE, "r") as conf_file:
         conf = json.load(conf_file)
@@ -13,3 +14,7 @@ if __name__ == "__main__":
             show_durations=True,
             show_diff=True
         ))
+
+
+if __name__ == "__main__":
+    _main()
