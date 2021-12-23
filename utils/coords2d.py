@@ -1,6 +1,6 @@
 import dataclasses
 from functools import cached_property
-from typing import Union, Iterable, TypeVar, Generic, List
+from typing import Union, Iterable, TypeVar, Generic, List, Optional
 
 
 @dataclasses.dataclass(order=True, eq=True, frozen=True)
@@ -22,6 +22,18 @@ class Coords2D:
         if y is None:
             y = self.y
         return Coords2D(x, y)
+
+    def __sub__(self, other: "Coords2D") -> "Coords2D":
+        return Coords2D(
+            self.x - other.x,
+            self.y - other.y
+        )
+
+    def __add__(self, other: "Coords2D") -> "Coords2D":
+        return Coords2D(
+            self.x + other.x,
+            self.y + other.y
+        )
 
     def __hash__(self):
         return hash((self.x, self.y))
@@ -124,6 +136,12 @@ class Map2D(Generic[T]):
     def get_value(self, coords: Coords2D) -> T:
         return self.map[coords.y][coords.x]
 
+    def try_get_value(self, coords: Coords2D, default: Optional[T] = None) -> Optional[T]:
+        if 0 <= coords.y < self.height:
+            if 0 <= coords.x < self.width:
+                return self.get_value(coords)
+        return default
+
     def set_value(self, coords: Coords2D, val: T) -> None:
         self.map[coords.y][coords.x] = val
 
@@ -143,6 +161,13 @@ class Map2D(Generic[T]):
             grid.map.append([int(x) for x in line])
         return grid
 
+    @classmethod
+    def from_bool_input(cls, input_list: List[str], true_value: str = "1"):
+        grid = cls(0, 0, fill=False)
+        for line in input_list:
+            grid.map.append([(x == true_value) for x in line])
+        return grid
+
     def valid_coords(self, coords: Coords2D) -> bool:
         if coords.x < 0 or coords.y < 0:
             return False
@@ -154,3 +179,9 @@ class Map2D(Generic[T]):
         return [
             coord for coord in coords.list_neighbours(with_diagonals) if self.valid_coords(coord)
         ]
+
+    def count(self, value: T) -> int:
+        return sum(
+            line.count(value)
+            for line in self.map
+        )
