@@ -137,9 +137,8 @@ class Map2D(Generic[T]):
         return self.map[coords.y][coords.x]
 
     def try_get_value(self, coords: Coords2D, default: Optional[T] = None) -> Optional[T]:
-        if 0 <= coords.y < self.height:
-            if 0 <= coords.x < self.width:
-                return self.get_value(coords)
+        if self.valid_coords(coords):
+            return self.get_value(coords)
         return default
 
     def set_value(self, coords: Coords2D, val: T) -> None:
@@ -169,11 +168,10 @@ class Map2D(Generic[T]):
         return grid
 
     def valid_coords(self, coords: Coords2D) -> bool:
-        if coords.x < 0 or coords.y < 0:
-            return False
-        if coords.x >= self.width or coords.y >= self.height:
-            return False
-        return True
+        return (
+            0 <= coords.x < self.width
+            and 0 <= coords.y < self.height
+        )
 
     def valid_neighbours(self, coords: Coords2D, with_diagonals: bool = False) -> List[Coords2D]:
         return [
