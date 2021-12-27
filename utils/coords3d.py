@@ -108,6 +108,13 @@ class Map3D(Map2D):
                 for z in range(len(row)):
                     yield Coords3D(x, y, z)
 
+    def all_coords_with_value(self, value: T) -> Iterable[Coords3D]:
+        for y, layer in enumerate(self.map):
+            for x, row in enumerate(layer):
+                for z, val in enumerate(row):
+                    if val == value:
+                        yield Coords3D(x, y, z)
+
     @classmethod
     def from_number_input(cls, input_list: List[str]) -> "Map3D[int]":
         raise NotImplementedError
