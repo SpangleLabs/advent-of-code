@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 from datetime import datetime
 from typing import Optional
 
@@ -52,6 +53,7 @@ def setup_day(year: int, day: int, cookie: str) -> None:
         if not os.path.exists(part_2_file):
             print("But not part two, copying part 1..")
             shutil.copy(part_1_file, part_2_file)
+            subprocess.run(["git", "add", part_2_file])
         return
     page_url = f"https://adventofcode.com/{year}/day/{day}"
     input_url = f"https://adventofcode.com/{year}/day/{day}/input"
@@ -59,17 +61,20 @@ def setup_day(year: int, day: int, cookie: str) -> None:
     print("Creating code file from template")
     with open(part_1_file, "w") as f:
         f.write(CODE_TEMPLATE)
+    subprocess.run(["git", "add", part_1_file])
     # Get input data
     input_data = requests.get(input_url, cookies={"session": cookie}).content
     print("Saving input data")
     with open(input_file, "wb") as f:
         f.write(input_data)
+    subprocess.run(["git", "add", input_file])
     # Find test data
     example = find_example(page_url, cookie)
     if example:
         print("Example found, saving as test data")
         with open(test_file, "w") as f:
             f.write(example)
+        subprocess.run(["git", "add", test_file])
 
 
 def _main() -> None:
