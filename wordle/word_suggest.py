@@ -1,5 +1,4 @@
 import json
-from abc import ABC, abstractmethod
 from typing import List, Set, Optional
 import string
 
@@ -55,7 +54,6 @@ class LetterState:
     def add_known_location(self, pos: int) -> None:
         self.known_locations.add(pos)
 
-    @abstractmethod
     def add_known_miss(self, pos: int) -> None:
         self.known_misses.add(pos)
 
@@ -99,12 +97,27 @@ class WordleState:
                 matching.append(word)
         return matching
 
-    def suggest_matching(self) -> None:
+    def word_would_leave(self, word: str, other_words: List[str]) -> int:
+        remaining = other_words[:]
+        for pos, letter in enumerate(word):
+            if self.state[letter].presence is True:
+                if pos in self.state[letter].known_locations:
+                    continue
+                remaining = [w for w in remaining if w[pos] != letter]
+            else:
+                remaining = [w for w in remaining if letter not in w]
+        return len(remaining)
+
+    def suggest_matching(self, count: int = -1) -> None:
         all_matching = self.remaining_words()
         print(f"There are {len(all_matching)} matching words")
         print(f"Matching words: ")
-        for match in all_matching:
-            print(match)
+        match_counts = {
+            word: self.word_would_leave(word, all_matching)
+            for word in all_matching
+        }
+        for match, count in sorted(match_counts.items(), key=lambda pair: pair[1])[:count]:
+            print(f"{match}: Could rule out {len(all_matching) - count}")
 
     def game_won(self) -> bool:
         return sum(
@@ -113,7 +126,7 @@ class WordleState:
         ) == WORD_LENGTH
 
     def winning_word(self) -> Optional[str]:
-        word_letters = [None] * WORD_LENGTH
+        word_letters: List[Optional[str]] = [None] * WORD_LENGTH
         for letter_state in self.state.values():
             for loc in letter_state.known_locations:
                 word_letters[loc] = letter_state.letter
@@ -124,6 +137,8 @@ class WordleState:
 
 def play():
     state = WordleState()
+    print("For your first word, may I suggest:")
+    state.suggest_matching(10)
     turn = 1
     while not state.game_won() and turn < GAME_TURNS:
         state.build_state()
