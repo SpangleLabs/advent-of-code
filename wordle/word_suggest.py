@@ -1,5 +1,5 @@
 import json
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Dict
 import string
 
 
@@ -57,6 +57,29 @@ class LetterState:
     def add_known_miss(self, pos: int) -> None:
         self.known_misses.add(pos)
 
+    def copy(self) -> "LetterState":
+        return LetterState(
+            self.letter,
+            self.presence,
+            self.known_locations.copy(),
+            self.known_misses.copy()
+        )
+
+    def with_presence(self, presence: bool) -> "LetterState":
+        other = self.copy()
+        other.presence = presence
+        return other
+
+    def with_known_location(self, pos: int) -> "LetterState":
+        other = self.copy()
+        other.add_known_location(pos)
+        return other
+
+    def with_known_miss(self, pos: int) -> "LetterState":
+        other = self.copy()
+        other.add_known_miss(pos)
+        return other
+
 
 class WordleState:
     def __init__(self) -> None:
@@ -97,6 +120,76 @@ class WordleState:
                 matching.append(word)
         return matching
 
+    def word_could_give(self, word: str) -> List[Dict[str, LetterState]]:
+        states = [self.state.copy()]
+        for pos, letter in enumerate(word):
+            if self.state[letter].presence is True:
+                if pos in self.state[letter].known_locations:
+                    continue
+                new_states = [
+                    {**state, letter: state[letter].with_known_location(pos)}
+                    for state in states
+                ] + [
+                    {**state, letter: state[letter].with_known_miss(pos)}
+                    for state in states
+                ]
+                states = new_states
+            else:
+                new_states = [
+                    {**state, letter: state[letter].with_presence(False)}
+                    for state in states
+                ] + [
+                    {**state, letter: state[letter].with_known_location(pos)}
+                    for state in states
+                ] + [
+                    {**state, letter: state[letter].with_known_miss(pos)}
+                    for state in states
+                ]
+                states = new_states
+        return states
+
+    def word_leave_options_via_states(self, word: str, other_words: List[str]) -> List[int]:
+        states = self.word_could_give(word)
+        options = [
+            len(self.matches_state(state, other_words))
+            for state in states
+        ]
+        result = sorted(options, reverse=True)
+        print(f"Word: {word} would leave options: {result}")
+        return result
+
+    def word_leave_options(self, word: str, other_words: List[str]) -> List[int]:
+        remaining_options = [other_words.copy()]
+        for pos, letter in enumerate(word):
+            if self.state[letter].presence is True:
+                if pos in self.state[letter].known_locations:
+                    continue
+                new_remaining = []
+                for remaining_words in remaining_options:
+                    new_remaining.append([word for word in remaining_words if word[pos] != letter])
+                    new_remaining.append([word for word in remaining_words if word[pos] == letter])
+                remaining_options = new_remaining
+            else:
+                new_remaining = []
+                for remaining_words in remaining_options:
+                    new_remaining.append([word for word in remaining_words if word[pos] == letter])
+                    new_remaining.append([word for word in remaining_words if letter in word and word[pos] != letter])
+                    new_remaining.append([word for word in remaining_words if letter not in word])
+                remaining_options = new_remaining
+        options = [
+            len(remaining_option)
+            for remaining_option in remaining_options
+        ]
+        result = sorted(options, reverse=True)
+        return result
+
+    def matches_state(self, state: Dict[str, LetterState], words: List[str]) -> List[str]:
+        matching = []
+        for word in words:
+            if all(letter_state.matches_word(word) for letter_state in state.values()):
+                matching.append(word)
+        return matching
+
     def word_would_leave(self, word: str, other_words: List[str]) -> int:
         remaining = other_words[:]
         for pos, letter in enumerate(word):
@@ -108,16 +201,17 @@ class WordleState:
                 remaining = [w for w in remaining if letter not in w]
         return len(remaining)
 
-    def suggest_matching(self, count: int = -1) -> None:
+    def suggest_matching(self, suggestions: int = -1) -> None:
         all_matching = self.remaining_words()
         print(f"There are {len(all_matching)} matching words")
         print(f"Matching words: ")
         match_counts = {
-            word: self.word_would_leave(word, all_matching)
+            word: self.word_leave_options(word, all_matching)
             for word in all_matching
         }
-        for match, count in sorted(match_counts.items(), key=lambda pair: pair[1])[:count]:
-            print(f"{match}: Could rule out {len(all_matching) - count}")
+        all_count = len(all_matching)
+        for match, counts in sorted(match_counts.items(), key=lambda pair: pair[1])[:suggestions]:
+            print(f"{match}: Could rule out at least {all_count - counts[0]} options")
 
     def game_won(self) -> bool:
         return sum(
@@ -138,7 +232,7 @@ class WordleState:
 def play():
     state = WordleState()
     print("For your first word, may I suggest:")
-    state.suggest_matching(10)
+    state.suggest_matching(25)
     turn = 1
     while not state.game_won() and turn < GAME_TURNS:
         state.build_state()
