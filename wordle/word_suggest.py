@@ -1,4 +1,5 @@
 import json
+from enum import Enum, auto
 from typing import List, Set, Optional, Dict
 import string
 
@@ -10,6 +11,11 @@ WORD_LENGTH = 5
 
 with open("words.json", "r") as f:
     DICTIONARY = json.load(f)
+
+
+class SuggestionOrdering(Enum):
+    REMAINING_OPTIONS = auto()
+    ESTIMATED_POINTS = auto()
 
 
 def ordinal(pos: int) -> str:
@@ -201,17 +207,45 @@ class WordleState:
                 remaining = [w for w in remaining if letter not in w]
         return len(remaining)
 
-    def suggest_matching(self, suggestions: int = -1) -> None:
+    def expected_clue_points_for_word(self, word: str, remaining_words: List[str]) -> float:
+        points = [self.clue_points_if_word(word, remaining) for remaining in remaining_words]
+        return sum(points) / len(points)
+
+    def clue_points_if_word(self, guess: str, answer: str) -> int:
+        points = 0
+        for pos, letter in enumerate(answer):
+            if guess[pos] == letter:
+                points += 2
+            elif letter in guess:
+                points += 1
+        return points
+
+    def suggest_matching(
+            self,
+            suggestions: int = -1,
+            order_by: Optional[SuggestionOrdering] = SuggestionOrdering.ESTIMATED_POINTS
+    ) -> None:
         all_matching = self.remaining_words()
         print(f"There are {len(all_matching)} matching words")
         print(f"Matching words: ")
-        match_counts = {
-            word: self.word_leave_options(word, all_matching)
-            for word in all_matching
-        }
-        all_count = len(all_matching)
-        for match, counts in sorted(match_counts.items(), key=lambda pair: pair[1])[:suggestions]:
-            print(f"{match}: Could rule out at least {all_count - counts[0]} options")
+        if order_by is None:
+            for word in all_matching:
+                print(word)
+        elif order_by == SuggestionOrdering.REMAINING_OPTIONS:
+            match_counts = {
+                word: self.word_leave_options(word, all_matching)
+                for word in all_matching
+            }
+            all_count = len(all_matching)
+            for match, counts in sorted(match_counts.items(), key=lambda pair: pair[1])[:suggestions]:
+                print(f"{match}: Could rule out at least {all_count - counts[0]} options")
+        else:
+            match_points = {
+                word: self.expected_clue_points_for_word(word, all_matching)
+                for word in all_matching
+            }
+            for match, exp_points in sorted(match_points.items(), key=lambda pair: pair[1], reverse=True)[:suggestions]:
+                print(f"{match}: Could give an average of {exp_points:.02f} points")
 
     def game_won(self) -> bool:
         return sum(
